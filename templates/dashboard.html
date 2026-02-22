@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>보안 취약점 분석 대시보드</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=3">
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="container">
+            <div class="logo" onclick="resetDashboard()" style="cursor: pointer;">
+                <img src="/static/images/JK SecuOne_logo.png" alt="JK SecuOne Logo" class="logo-icon" style="width: 40px; height: 40px; object-fit: contain;">
+                <span>JK SecuOne</span>
+            </div>
+            <nav class="nav">
+                <a href="#" class="nav-link active">대시보드</a>
+                <a href="/mypage#history" class="nav-link">검사 이력</a>
+                
+                <!-- 플랜 정보 -->
+                <div class="plan-badge" id="planBadge" style="display: none;">
+                    <svg class="plan-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="3" y1="9" x2="21" y2="9"/>
+                        <line x1="9" y1="21" x2="9" y2="9"/>
+                    </svg>
+                    <span id="planName">무료 플랜</span>
+                </div>
+
+                <div class="user-menu-container">
+                    <button class="login-btn" id="userMenuBtn" onclick="goToLogin()">로그인</button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="/mypage" class="dropdown-item">마이페이지</a>
+                        <a href="#" class="dropdown-item" onclick="showLogoutModal(event)">로그아웃</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 메인 컨테이너 -->
+    <main class="main-container">
+        <div class="container">
+            
+            <!-- 도구 선택 -->
+            <section class="tool-selection">
+                <h1 class="section-title">분석 도구 선택</h1>
+                <div class="tool-cards">
+                    <div class="tool-card active" data-tool="pentera">
+                        <div class="tool-icon pentera-icon"><img src="/static/images/Pentera_logo.png" alt="Pentera" style="width: 100%; height: 100%; object-fit: contain;"></div>
+                        <h3>Pentera</h3>
+                        <p>침투 테스트 자동화 플랫폼</p>
+                        <span class="status-badge active">선택됨</span>
+                    </div>
+                    <div class="tool-card" data-tool="sentinelone">
+                        <div class="tool-icon sentinelone-icon"><img src="/static/images/SentinelOne_logo.png" alt="SentinelOne" style="width: 100%; height: 100%; object-fit: contain;"></div>
+                        <h3>SentinelOne</h3>
+                        <p>엔드포인트 보안 솔루션</p>
+                        <span class="status-badge"></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 파일 업로드 -->
+            <section class="upload-section">
+                <h2 class="section-title">보고서 업로드</h2>
+                <div class="upload-area" id="uploadArea">
+                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none">
+                        <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M17 8L12 3L7 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <h3>파일을 드래그하거나 클릭하여 업로드</h3>
+                    <p id="uploadHelpText">PDF 파일만 지원됩니다</p>
+                    <input type="file" id="fileInput" accept=".pdf,.csv" style="display: none;">
+                    <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                        파일 선택
+                    </button>
+                </div>
+                <div class="selected-file" id="selectedFile" style="display: none;">
+                    <svg class="file-icon" viewBox="0 0 24 24" fill="none">
+                        <path d="M13 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V9L13 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M13 2V9H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <div class="file-info">
+                        <span class="file-name" id="fileName"></span>
+                        <span class="file-size" id="fileSize"></span>
+                    </div>
+                    <button class="btn-remove" onclick="removeFile()">×</button>
+                </div>
+                <button class="btn btn-success btn-lg" id="analyzeBtn" style="display: none;" onclick="analyzeReport()">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="none">
+                        <path d="M9 5H7C6.46957 5 5.96086 5.21071 5.58579 5.58579C5.21071 5.96086 5 6.46957 5 7V19C5 19.5304 5.21071 20.0391 5.58579 20.4142C5.96086 20.7893 6.46957 21 7 21H17C17.5304 21 18.0391 20.7893 18.4142 20.4142C18.7893 20.0391 19 19.5304 19 19V7C19 6.46957 18.7893 5.96086 18.4142 5.58579C18.0391 5.21071 17.5304 5 17 5H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    분석 시작
+                </button>
+            </section>
+
+            <!-- 로딩 -->
+            <div class="loading-container" id="loadingContainer" style="display: none;">
+                <div class="spinner"></div>
+                <p>보고서 분석 중...</p>
+            </div>
+
+            <!-- 결과 -->
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <h2 class="section-title">분석 결과</h2>
+                
+                <!-- 요약 카드 -->
+                <div class="summary-cards" id="summaryCards">
+                    <div class="summary-card">
+                        <div class="card-icon total">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M9 11L12 14L22 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M21 12V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="totalCount">0</h3>
+                            <p>총 발견된 위협</p>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-icon mapped">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 6V12L16 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="mappedCount">0</h3>
+                            <p>조치 완료</p>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-icon unmapped">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                                <path d="M15 9L9 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <path d="M9 9L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="unmappedCount">0</h3>
+                            <p>조치 필요</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 파일 정보 -->
+                <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; margin: 2rem 0;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <svg style="width: 40px; height: 40px; color: var(--primary-color);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                        </svg>
+                        <div style="flex: 1;">
+                            <h3 id="resultFileName" style="margin: 0 0 0.5rem 0; font-size: 1.1rem; color: var(--text-primary);">파일명.pdf</h3>
+                            <p id="resultFileSize" style="margin: 0; color: var(--text-secondary); font-size: 0.9rem;">0 KB</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 취약점 목록 -->
+                <div class="vulnerabilities-list" id="vulnerabilitiesList">
+                    <!-- 동적으로 생성 -->
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- 로그인 안내 모달 -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <svg class="modal-icon" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                    <path d="M12 8V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <h2>로그인이 필요합니다</h2>
+            </div>
+            <p class="modal-text">보고서 분석 기능은 로그인 후 이용 가능합니다.</p>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeLoginModal()">취소</button>
+                <button class="btn-primary" onclick="goToLogin()">로그인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 업그레이드 안내 모달 -->
+    <div id="upgradeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 8V12"/>
+                    <path d="M12 16H12.01"/>
+                </svg>
+                <h2>검사 횟수 초과</h2>
+            </div>
+            <p class="modal-text">검사 가능 횟수를 모두 소진하였습니다.<br>플랜을 업그레이드하시면<br>무제한으로 이용하실 수 있습니다.</p>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeUpgradeModal()">취소</button>
+                <button class="btn-primary" onclick="goToUpgrade()">플랜 업그레이드</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 로그아웃 모달 -->
+    <div id="logoutModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <h2>로그아웃</h2>
+            </div>
+            <p class="modal-text">로그아웃 하시겠습니까?</p>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeLogoutModal()">취소</button>
+                <button class="btn-primary" onclick="performLogout()">로그아웃</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 푸터 -->
+    <footer class="footer" style="background: var(--card-bg); border-top: 1px solid var(--border-color); padding: 3rem 0 2rem;">
+        <div class="container">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 3rem; margin-bottom: 2rem;">
+                <!-- 서비스 정보 -->
+                <div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+                        <img src="/static/images/JK SecuOne_logo.png" alt="JK SecuOne Logo" style="width: 32px; height: 32px; object-fit: contain;">
+                        <h3 style="margin: 0; color: var(--text-primary); font-size: 1.375rem; font-weight: 700; letter-spacing: -0.02em;">JK SecuOne</h3>
+                    </div>
+                    <p align="left"style="margin: 0; color: var(--text-secondary); font-size: 0.875rem; line-height: 1.7; font-weight: 400;">
+                        ISMS-P 인증을 위한<br>지능형 보안 취약점 분석 플랫폼
+                    </p>
+                </div>
+                
+                <!-- 주요 기능 -->
+                <div>
+                    <h4 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1rem; font-weight: 600;">주요 기능</h4>
+                    <ul style="margin: 0; padding: 0; list-style: none;">
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">Sentinel One 매핑</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">Pentera 매핑</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="/mypage#history" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">검사 이력 관리</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="/mypage#pricing" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">요금제 안내</a></li>
+                    </ul>
+                </div>
+                
+                <!-- 지원 -->
+                <div>
+                    <h4 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1rem; font-weight: 600;">지원</h4>
+                    <ul style="margin: 0; padding: 0; list-style: none;">
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">사용 가이드</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">FAQ</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">문의하기</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="/mypage" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">마이페이지</a></li>
+                    </ul>
+                </div>
+                
+                <!-- 법적 정보 -->
+                <div>
+                    <h4 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1rem; font-weight: 600;">법적 정보</h4>
+                    <ul style="margin: 0; padding: 0; list-style: none;">
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">이용약관</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">개인정보처리방침</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">쿠키 정책</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div style="border-top: 1px solid var(--border-color); padding-top: 2rem; margin-top: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">
+                        &copy; 2025 JK SecuOne. All rights reserved.
+                    </p>
+                    <div style="display: flex; gap: 1rem;">
+                        <a href="#" style="color: var(--text-secondary); font-size: 0.875rem; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">서비스 상태</a>
+                        <span style="color: var(--border-color);">|</span>
+                        <a href="#" style="color: var(--text-secondary); font-size: 0.875rem; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">API 문서</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/js/main.js?v=7"></script>
+</body>
+</html>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입 - 보안 취약점 분석 대시보드</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        .signup-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            padding: 2rem;
+        }
+
+        .signup-box {
+            background: var(--card-bg);
+            border-radius: 1rem;
+            padding: 3rem;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-color);
+        }
+
+        .signup-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .signup-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .signup-logo svg {
+            width: 48px;
+            height: 48px;
+            color: var(--primary-color);
+        }
+
+        .signup-logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .signup-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-label .required {
+            color: #ef4444;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 0.5rem;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .form-input.success {
+            border-color: #10b981;
+        }
+
+        .form-input.error {
+            border-color: #ef4444;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .input-group .form-input {
+            flex: 1;
+        }
+
+        .verify-btn {
+            padding: 0.875rem 1.5rem;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .verify-btn:hover:not(:disabled) {
+            background: #8b5cf6;
+        }
+
+        .verify-btn:disabled {
+            background: var(--border-color);
+            cursor: not-allowed;
+        }
+
+        .help-text {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .help-text.success {
+            color: #10b981;
+        }
+
+        .help-text.error {
+            color: #ef4444;
+        }
+
+        .verification-code-group {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--hover-bg);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .verification-code-group.show {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .signup-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 1rem;
+        }
+
+        .signup-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .signup-btn:disabled {
+            background: var(--border-color);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 2rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .login-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+
+        .back-link a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.2s;
+        }
+
+        .back-link a:hover {
+            color: var(--text-primary);
+        }
+
+        .password-strength {
+            margin-top: 0.5rem;
+        }
+
+        .strength-bar {
+            height: 4px;
+            background: var(--border-color);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .strength-fill {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s;
+            background: #ef4444;
+        }
+
+        .strength-fill.weak {
+            width: 33%;
+            background: #ef4444;
+        }
+
+        .strength-fill.medium {
+            width: 66%;
+            background: #f59e0b;
+        }
+
+        .strength-fill.strong {
+            width: 100%;
+            background: #10b981;
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <div class="signup-box">
+            <div class="signup-header">
+                <div class="signup-logo">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M12 2L3 7V11C3 16.55 6.84 21.74 12 23C17.16 21.74 21 16.55 21 11V7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 8V12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <h1>보안 취약점 분석</h1>
+                </div>
+                <p class="signup-subtitle">새 계정을 만들어보세요</p>
+            </div>
+
+            <form id="signupForm" onsubmit="handleSignup(event)">
+                <!-- 사용자 이름 -->
+                <div class="form-group">
+                    <label class="form-label" for="name">
+                        사용자 이름 <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="name" 
+                        class="form-input" 
+                        placeholder="홍길동"
+                        required
+                    >
+                </div>
+
+                <!-- 연락처 -->
+                <div class="form-group">
+                    <label class="form-label" for="phone">
+                        연락처 <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="tel" 
+                        id="phone" 
+                        class="form-input" 
+                        placeholder="010-0000-0000"
+                        required
+                    >
+                    <p class="help-text">숫자만 입력하시면 자동으로 형식이 적용됩니다.</p>
+                </div>
+
+                <!-- 이메일 -->
+                <div class="form-group">
+                    <label class="form-label" for="email">
+                        이메일 <span class="required">*</span>
+                    </label>
+                    <div class="input-group">
+                        <input 
+                            type="email" 
+                            id="email" 
+                            class="form-input" 
+                            placeholder="example@company.com"
+                            required
+                        >
+                        <button type="button" class="verify-btn" id="sendCodeBtn" onclick="sendVerificationCode()">
+                            인증
+                        </button>
+                    </div>
+                    <p class="help-text" id="emailHelpText"></p>
+                    
+                    <!-- 인증번호 입력란 (동적 생성) -->
+                    <div class="verification-code-group" id="verificationCodeGroup">
+                        <label class="form-label" for="verificationCode">
+                            인증번호 <span class="required">*</span>
+                        </label>
+                        <div class="input-group">
+                            <input 
+                                type="text" 
+                                id="verificationCode" 
+                                class="form-input" 
+                                placeholder="6자리 인증번호"
+                                maxlength="6"
+                            >
+                            <button type="button" class="verify-btn" onclick="verifyCode()">
+                                확인
+                            </button>
+                        </div>
+                        <p class="help-text" id="codeHelpText"></p>
+                    </div>
+                </div>
+
+                <!-- 아이디 -->
+                <div class="form-group">
+                    <label class="form-label" for="username">
+                        아이디 <span class="required">*</span>
+                    </label>
+                    <div class="input-group">
+                        <input 
+                            type="text" 
+                            id="username" 
+                            class="form-input" 
+                            placeholder="영문, 숫자 조합 4-20자"
+                            required
+                        >
+                        <button type="button" class="verify-btn" onclick="checkUsername()">
+                            중복확인
+                        </button>
+                    </div>
+                    <p class="help-text" id="usernameHelpText"></p>
+                </div>
+
+                <!-- 비밀번호 -->
+                <div class="form-group">
+                    <label class="form-label" for="password">
+                        비밀번호 <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        class="form-input" 
+                        placeholder="8자 이상, 영문/숫자/특수문자 포함"
+                        required
+                    >
+                    <div class="password-strength">
+                        <div class="strength-bar">
+                            <div class="strength-fill" id="strengthFill"></div>
+                        </div>
+                        <p class="help-text" id="passwordHelpText"></p>
+                    </div>
+                </div>
+
+                <!-- 비밀번호 재입력 -->
+                <div class="form-group">
+                    <label class="form-label" for="passwordConfirm">
+                        비밀번호 재입력 <span class="required">*</span>
+                    </label>
+                    <input 
+                        type="password" 
+                        id="passwordConfirm" 
+                        class="form-input" 
+                        placeholder="비밀번호를 다시 입력하세요"
+                        required
+                    >
+                    <p class="help-text" id="passwordConfirmHelpText"></p>
+                </div>
+
+                <button type="submit" class="signup-btn" id="signupBtn" disabled>
+                    회원가입
+                </button>
+            </form>
+
+            <div class="login-link">
+                이미 계정이 있으신가요? <a href="/login">로그인</a>
+            </div>
+
+            <div class="back-link">
+                <a href="/">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    대시보드로 돌아가기
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/signup.js"></script>
+</body>
+</html>

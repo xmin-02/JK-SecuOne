@@ -1,0 +1,42 @@
+Vulnerabilities,number
+Host can be forced to authenticate by a rogue server,#1
+Using empty password(s),#2
+Insecure SNMP version,#3
+Anonymous FTP login allowed,#4
+Discovered closed ports on the host ,#5
+phpMyAdmin Panel - Detect,#6
+SMB sever on endpoint does not validate clients ,#7
+Password can easily be cracked leveraging leaked password,#8
+Local File Inclusion (LFI),#9
+ASP .NET Insecure Deserialization,#10
+SMB message signing is disabled,#11
+Reflected Cross-Site Scripting (XSS),#12
+ZeroLogon (CVE-2020-1472),#13
+Citrix ADC (CVE-2019-19781),#14
+Fortinet VPN (CVE-2018-13379),#15
+Oracle WebLogic RCE (CVE-2020-14882),#16
+Proxylogon Post - Auth Arbitrary File Write RCE (CVE-2021-27065),#17
+PulseSecure (CVE 2019-11510),#18
+Rejetto HFS template injection (CVE-2024-23692),#19
+Spring4Shell (CVE-2022-22965),#20
+VMWare vCenter - File Upload Vulnerability RCE (CVE-2021-22005),#21
+EternalBlue (MS17-010) (CVE-2017-0144),#22
+Dell Signed Driver PE (CVE-2021-21551),#23
+PrintNightmare (CVE-2021-34527),#24
+SAM Name Impersonation (CVE-2021-42278),#25
+Windows Win32k PE (CVE-2018-8120),#26
+ProxyNotShell Microsoft Exchange RCE (CVE-2022-41082),#27
+Bits Service PE (CVE-2020-0787),#28
+Dirty Pipe LPE (CVE-2022-0847),#29
+Polkit (CVE-2021-3560),#30
+PwnKit - Privileges escalation (CVE-2021-4034),#31
+Sudo (CVE-2021-3156),#32
+Windows Print Spooler LPE (CVE-2021-1675),#33
+Windows Win32k PE (CVE-2021-1732),#34
+DFSCoerce,#35
+PetitPotam (CVE-2021-36942),#36
+Oracle WebLogic Authentication Bypass (CVE-2020-14883),#37
+VMWare vCenter - Information Disclosure (CVE-2021-22948),#38
+Windows NTLM Tampering vulnerability (CVE-2019-1040),#39
+TCP Timestamps Enabled,#40
+Host supports SMBv1 Protocol,#41

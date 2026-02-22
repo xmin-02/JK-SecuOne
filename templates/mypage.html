@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이페이지 - JK SecuOne 대시보드</title>
+    <link rel="stylesheet" href="/static/css/style.css?v=3">
+    <style>
+        .mypage-container {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+
+        .sidebar {
+            width: 250px;
+            background: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 2rem;
+            padding-top: 2rem;
+            height: fit-content;
+            margin-top: 2rem;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu-item {
+            margin: 0.5rem 0;
+        }
+
+        .sidebar-menu-link {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-menu-link:hover,
+        .sidebar-menu-link.active {
+            background: var(--hover-bg);
+            color: var(--text-primary);
+            border-left-color: var(--primary-color);
+        }
+
+        .sidebar-menu-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .info-section {
+            background: var(--card-bg);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .info-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: var(--text-primary);
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--hover-bg), var(--card-bg));
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 768px) {
+            .mypage-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 헤더 -->
+    <header class="header">
+        <div class="container">
+            <div class="logo" onclick="location.href='/'" style="cursor: pointer;">
+                <img src="/static/images/JK SecuOne_logo.png" alt="JK SecuOne Logo" class="logo-icon" style="width: 40px; height: 40px; object-fit: contain;">
+                <span>JK SecuOne</span>
+            </div>
+            <nav class="nav">
+                <a href="/" class="nav-link">대시보드</a>
+                <a href="#history" class="nav-link" onclick="navigateToSection(event, 'history')">검사 이력</a>
+                <div class="plan-badge" id="planBadge" style="display: none; cursor: pointer;" onclick="navigateToSection(event, 'pricing')">
+                    <svg class="plan-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                        <path d="M2 17l10 5 10-5"></path>
+                        <path d="M2 12l10 5 10-5"></path>
+                    </svg>
+                    <span id="planName">무료 플랜</span>
+                </div>
+                <div class="user-menu-container">
+                    <button class="login-btn" id="userMenuBtn" onclick="toggleUserMenu(event)"></button>
+                    <div class="user-dropdown" id="userDropdown">
+                        <a href="/mypage" class="dropdown-item">마이페이지</a>
+                        <a href="#" class="dropdown-item" onclick="showLogoutModal()">로그아웃</a>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 메인 컨테이너 -->
+    <div class="mypage-container">
+        <!-- 사이드바 -->
+        <aside class="sidebar">
+            <ul class="sidebar-menu">
+                <li class="sidebar-menu-item">
+                    <a href="#profile" class="sidebar-menu-link active" onclick="showSection('profile', event)">
+                        <svg class="sidebar-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        <span>마이페이지</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item" id="adminPageMenuItem" style="display: none;">
+                    <a href="#admin" class="sidebar-menu-link" onclick="showSection('admin', event)">
+                        <svg class="sidebar-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>
+                        </svg>
+                        <span>관리자 페이지</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="#pricing" class="sidebar-menu-link" onclick="showSection('pricing', event)">
+                        <svg class="sidebar-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="3" y1="9" x2="21" y2="9"/>
+                            <line x1="9" y1="21" x2="9" y2="9"/>
+                        </svg>
+                        <span>요금제 관리</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="#history" class="sidebar-menu-link" onclick="showSection('history', event)">
+                        <svg class="sidebar-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 3h18v18H3V3z"/>
+                            <path d="M8 7h8M8 11h8M8 15h5"/>
+                        </svg>
+                        <span>검사 이력 보기</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="#edit" class="sidebar-menu-link" onclick="showSection('edit', event)">
+                        <svg class="sidebar-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                        <span>개인정보 수정</span>
+                    </a>
+                </li>
+                <li class="sidebar-menu-item">
+                    <a href="#settings" class="sidebar-menu-link" onclick="showSection('settings', event)">
+                        <svg class="sidebar-menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M12 1v6m0 6v6m6-12h-6m-6 0H1m11 6H7m10 0h5"/>
+                        </svg>
+                        <span>계정 설정</span>
+                    </a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- 콘텐츠 영역 -->
+        <main class="content-area">
+            <!-- 프로필 섹션 -->
+            <div id="profileSection" class="content-section">
+                <div class="page-header">
+                    <h1 class="page-title">마이페이지</h1>
+                    <p class="page-subtitle">회원 정보 및 활동 내역을 확인하세요</p>
+                </div>
+
+                <!-- 통계 -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalScans">0</div>
+                        <div class="stat-label">총 검사 횟수</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalVulns">0</div>
+                        <div class="stat-label">발견된 취약점</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="lastScan">-</div>
+                        <div class="stat-label">마지막 검사</div>
+                    </div>
+                </div>
+
+                <!-- 개인정보 -->
+                <div class="info-section">
+                    <h2 class="info-section-title">개인정보</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">이름</span>
+                            <span class="info-value" id="userName">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">아이디</span>
+                            <span class="info-value" id="userUsername">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">이메일</span>
+                            <span class="info-value" id="userEmail">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">연락처</span>
+                            <span class="info-value" id="userPhone">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 현재 플랜 -->
+                <div class="info-section">
+                    <h2 class="info-section-title">현재 플랜</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">플랜</span>
+                            <span class="info-value" id="userPlan">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">사용 내역</span>
+                            <button onclick="showUsageHistoryModal()" class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.875rem;">사용 내역 자세히 보기</button>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Sentinel One ISMS-P 매핑</span>
+                            <span class="info-value" id="sentinelUsage" style="font-size: 0.9rem;">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Pentera ISMS-P 매핑</span>
+                            <span class="info-value" id="penteraUsage" style="font-size: 0.9rem;">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 관리자 페이지 섹션 -->
+            <div id="adminSection" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">관리자 페이지</h1>
+                    <p class="page-subtitle">시스템 전체 통계 및 사용자 관리</p>
+                </div>
+
+                <!-- 통계 대시보드 -->
+                <div class="stats-grid" style="margin-bottom: 2rem;">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalUsers">0</div>
+                        <div class="stat-label">전체 사용자</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalScans">0</div>
+                        <div class="stat-label">전체 검사</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="premiumUsers">0</div>
+                        <div class="stat-label">유료 사용자</div>
+                    </div>
+                </div>
+
+                <!-- 사용자 관리 -->
+                <div class="info-section">
+                    <h2 class="info-section-title">사용자 관리</h2>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <thead style="background: var(--hover-bg); border-bottom: 2px solid var(--border-color);">
+                                <tr>
+                                    <th style="padding: 1rem; text-align: left; color: var(--text-secondary); font-weight: 600; width: 60px;">ID</th>
+                                    <th style="padding: 1rem; text-align: left; color: var(--text-secondary); font-weight: 600; min-width: 80px;">이름</th>
+                                    <th style="padding: 1rem; text-align: left; color: var(--text-secondary); font-weight: 600;">아이디</th>
+                                    <th style="padding: 1rem; text-align: left; color: var(--text-secondary); font-weight: 600;">이메일</th>
+                                    <th style="padding: 1rem; text-align: center; color: var(--text-secondary); font-weight: 600; white-space: nowrap;">검사 수</th>
+                                    <th style="padding: 1rem; text-align: center; color: var(--text-secondary); font-weight: 600; white-space: nowrap;">가입일</th>
+                                    <th style="padding: 1rem; text-align: center; color: var(--text-secondary); font-weight: 600; min-width: 120px;">관리</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <tr>
+                                    <td colspan="7" style="padding: 2rem; text-align: center; color: var(--text-secondary);">로딩 중...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 검사 이력 섹션 -->
+            <div id="historySection" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">검사 이력</h1>
+                    <p class="page-subtitle">과거 검사 기록을 확인하세요</p>
+                </div>
+                
+                <!-- 검색 및 필터 -->
+                <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem;">
+                    <div style="display: flex; gap: 1.5rem; align-items: flex-start; flex-wrap: wrap;">
+                        <!-- 검색창 -->
+                        <div style="flex: 1; min-width: 200px;">
+                            <input type="text" id="historySearchInput" placeholder="파일명으로 검색..." style="width: 100%; padding: 0.75rem 1rem; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary); font-size: 0.9rem;" oninput="filterScanHistory()">
+                        </div>
+                        
+                        <!-- 필터 버튼 -->
+                        <div style="display: flex; gap: 0.75rem; align-items: center;">
+                            <button id="filterPentera" class="filter-btn active" onclick="toggleFilter('pentera')">
+                                <svg style="width: 16px; height: 16px; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Pentera
+                            </button>
+                            <button id="filterSentinel" class="filter-btn active" onclick="toggleFilter('sentinel')">
+                                <svg style="width: 16px; height: 16px; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                Sentinel One
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 날짜 필터 -->
+                    <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <label style="color: var(--text-secondary); font-size: 0.875rem; white-space: nowrap;">시작일:</label>
+                            <input type="date" id="historyStartDate" style="padding: 0.5rem; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 0.875rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;" onchange="filterScanHistory()">
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <label style="color: var(--text-secondary); font-size: 0.875rem; white-space: nowrap;">종료일:</label>
+                            <input type="date" id="historyEndDate" style="padding: 0.5rem; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 0.875rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;" onchange="filterScanHistory()">
+                        </div>
+                        <button onclick="resetHistoryDateFilter()" style="padding: 0.5rem 1rem; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-secondary); font-size: 0.875rem; cursor: pointer;">
+                            날짜 초기화
+                        </button>
+                    </div>
+                </div>
+                
+                <style>
+                    .filter-btn {
+                        display: flex;
+                        align-items: center;
+                        padding: 0.5rem 1rem;
+                        background: var(--bg-primary);
+                        border: 2px solid var(--border-color);
+                        border-radius: 8px;
+                        color: var(--text-secondary);
+                        font-size: 0.9rem;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    }
+                    
+                    .filter-btn:hover {
+                        border-color: var(--primary-color);
+                    }
+                    
+                    .filter-btn.active {
+                        background: rgba(99, 102, 241, 0.1);
+                        border-color: var(--primary-color);
+                        color: var(--primary-color);
+                    }
+                    
+                    .filter-btn svg {
+                        opacity: 0;
+                        transition: opacity 0.2s;
+                    }
+                    
+                    .filter-btn.active svg {
+                        opacity: 1;
+                    }
+                </style>
+                
+                <div class="info-section" id="historyContainer">
+                    <p style="text-align: center; color: var(--text-secondary); padding: 3rem;">
+                        검사 이력이 없습니다.
+                    </p>
+                </div>
+            </div>
+
+            <!-- 요금제 관리 섹션 -->
+            <div id="pricingSection" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">요금제 관리</h1>
+                    <p class="page-subtitle">서비스 이용 요금제를 선택하세요</p>
+                </div>
+
+                <!-- 현재 플랜 정보 박스 -->
+                <div id="currentPlanInfo" style="background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1)); border: 2px solid rgba(99,102,241,0.3); border-radius: 1rem; padding: 1.5rem 2rem; margin-bottom: 2rem; display: none;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <svg style="width: 32px; height: 32px; color: var(--primary-color);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                                <path d="M2 17l10 5 10-5"></path>
+                                <path d="M2 12l10 5 10-5"></path>
+                            </svg>
+                            <div>
+                                <p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0;">현재 사용 중인 플랜</p>
+                                <p id="currentPlanName" style="color: var(--text-primary); font-size: 1.5rem; font-weight: 700; margin: 0.25rem 0 0 0;">Premium +</p>
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0;">다음 결제 예정일</p>
+                            <p id="nextPaymentDate" style="color: var(--primary-color); font-size: 1.5rem; font-weight: 700; margin: 0.25rem 0 0 0;">2025.01.23</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 요금제 카드 그리드 -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+                    <!-- Sentinel One + -->
+                    <div class="info-section pricing-card" data-plan="sentinel" style="position: relative; border: 2px solid var(--border-color);">
+                        <div style="text-align: center;">
+                            <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem;">Sentinel One +</h3>
+                            <div style="margin: 2rem 0;">
+                                <span style="font-size: 2.5rem; font-weight: 700; color: var(--primary-color);">₩40,000</span>
+                                <span style="color: var(--text-secondary); font-size: 1rem;"> / 월</span>
+                            </div>
+                            <p style="color: var(--text-secondary); margin-bottom: 2rem;">센티넬원 전문 플랜</p>
+                        </div>
+                        <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; min-height: 180px;">
+                            <div style="display: flex; align-items: start; gap: 0.75rem; margin-bottom: 1rem;">
+                                <svg style="width: 20px; height: 20px; color: #10b981; flex-shrink: 0; margin-top: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span style="color: var(--text-primary);">센티넬원 보고서 분석 무제한</span>
+                            </div>
+                            <div style="display: flex; align-items: start; gap: 0.75rem; margin-bottom: 1rem;">
+                                <svg style="width: 20px; height: 20px; color: #10b981; flex-shrink: 0; margin-top: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span style="color: var(--text-primary);">ISMS-P 매핑 무제한</span>
+                            </div>
+                        </div>
+                        <button class="btn-primary" style="width: 100%; margin-top: 1.5rem;" onclick="showPaymentModal('sentinel')">선택하기</button>
+                    </div>
+
+                    <!-- Pentera + -->
+                    <div class="info-section pricing-card" data-plan="pentera" style="position: relative; border: 2px solid var(--border-color);">
+                        <div style="text-align: center;">
+                            <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem;">Pentera +</h3>
+                            <div style="margin: 2rem 0;">
+                                <span style="font-size: 2.5rem; font-weight: 700; color: var(--primary-color);">₩35,000</span>
+                                <span style="color: var(--text-secondary); font-size: 1rem;"> / 월</span>
+                            </div>
+                            <p style="color: var(--text-secondary); margin-bottom: 2rem;">펜테라 전문 플랜</p>
+                        </div>
+                        <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; min-height: 180px;">
+                            <div style="display: flex; align-items: start; gap: 0.75rem; margin-bottom: 1rem;">
+                                <svg style="width: 20px; height: 20px; color: #10b981; flex-shrink: 0; margin-top: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span style="color: var(--text-primary);">펜테라 보고서 분석 무제한</span>
+                            </div>
+                            <div style="display: flex; align-items: start; gap: 0.75rem; margin-bottom: 1rem;">
+                                <svg style="width: 20px; height: 20px; color: #10b981; flex-shrink: 0; margin-top: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span style="color: var(--text-primary);">ISMS-P 매핑 무제한</span>
+                            </div>
+                        </div>
+                        <button class="btn-primary" style="width: 100%; margin-top: 1.5rem;" onclick="showPaymentModal('pentera')">선택하기</button>
+                    </div>
+
+                    <!-- Premium + -->
+                    <div class="info-section pricing-card" data-plan="premium" style="position: relative; border: 2px solid var(--primary-color);">
+                        <div style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--primary-color); color: white; padding: 0.25rem 1rem; border-radius: 1rem; font-size: 0.75rem; font-weight: 600;">
+                            추천
+                        </div>
+                        <div style="text-align: center;">
+                            <h3 style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem;">Premium +</h3>
+                            <div style="margin: 2rem 0;">
+                                <span style="font-size: 2.5rem; font-weight: 700; color: var(--primary-color);">₩65,000</span>
+                                <span style="color: var(--text-secondary); font-size: 1rem;"> / 월</span>
+                            </div>
+                            <p style="color: var(--text-secondary); margin-bottom: 2rem;">올인원 플랜</p>
+                        </div>
+                        <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; min-height: 120px;">
+                            <div style="display: flex; align-items: start; gap: 0.75rem; margin-bottom: 1rem;">
+                                <svg style="width: 20px; height: 20px; color: #10b981; flex-shrink: 0; margin-top: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span style="color: var(--text-primary);">센티넬원 보고서 분석 무제한</span>
+                            </div>
+                            <div style="display: flex; align-items: start; gap: 0.75rem; margin-bottom: 1rem;">
+                                <svg style="width: 20px; height: 20px; color: #10b981; flex-shrink: 0; margin-top: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span style="color: var(--text-primary);">펜테라 보고서 분석 무제한</span>
+                            </div>
+                            <div style="display: flex; align-items: start; gap: 0.75rem; margin-bottom: 1rem;">
+                                <svg style="width: 20px; height: 20px; color: #10b981; flex-shrink: 0; margin-top: 2px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                </svg>
+                                <span style="color: var(--text-primary);">ISMS-P 매핑 무제한</span>
+                            </div>
+                        </div>
+                        <button class="btn-primary" style="width: 100%; margin-top: 1.5rem;" onclick="showPaymentModal('premium')">선택하기</button>
+                    </div>
+                </div>
+
+                <!-- 요금제 자세히 보기 버튼 -->
+                <div style="text-align: center; margin-top: 3rem;">
+                    <button class="btn-secondary" onclick="showPricingDetailModal()" style="padding: 1rem 3rem; font-size: 1rem;">
+                        <svg style="width: 20px; height: 20px; margin-right: 0.5rem; vertical-align: middle;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        요금제 자세히 보기
+                    </button>
+                </div>
+            </div>
+
+            <!-- 개인정보 수정 섹션 -->
+            <div id="editSection" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">개인정보 수정</h1>
+                    <p class="page-subtitle">회원 정보를 수정하세요</p>
+                </div>
+                <div class="info-section" id="editFormContainer">
+                    <!-- 비밀번호 확인 전에는 숨김 처리 -->
+                    <div id="passwordVerifyMessage" style="text-align: center; padding: 3rem;">
+                        <p style="color: var(--text-secondary); margin-bottom: 1rem;">개인정보를 수정하려면 비밀번호를 입력하세요.</p>
+                    </div>
+                    
+                    <!-- 수정 폼 (비밀번호 확인 후 표시) -->
+                    <div id="editForm" style="display: none;">
+                        <!-- 기본 정보 수정 -->
+                        <div class="edit-section-group">
+                            <h3 class="edit-section-title">기본 정보</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">이름</label>
+                                    <input type="text" id="editName" class="form-input" placeholder="이름">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">아이디</label>
+                                    <div style="position: relative;">
+                                        <input type="text" id="editUsername" class="form-input" placeholder="아이디" oninput="resetUsernameCheck()" style="padding-right: 90px; max-width: 265px;">
+                                        <button type="button" onclick="checkUsername()" class="btn-check-small">중복확인</button>
+                                    </div>
+                                    <small id="usernameCheckResult" style="display: block; margin-top: 0.25rem; font-weight: 500;"></small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">연락처</label>
+                                    <input type="tel" id="editPhone" class="form-input" placeholder="010-1234-5678">
+                                </div>
+                            </div>
+                            <button onclick="updateBasicInfo()" class="btn-primary" style="margin-top: 1rem;">기본 정보 수정</button>
+                        </div>
+
+                        <!-- 이메일 변경 -->
+                        <div class="edit-section-group">
+                            <h3 class="edit-section-title">이메일 변경</h3>
+                            <div class="form-group">
+                                <label class="form-label">새 이메일</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="email" id="newEmail" class="form-input" placeholder="new@example.com">
+                                    <button onclick="sendEmailVerification()" class="btn-secondary">인증번호 발송</button>
+                                </div>
+                            </div>
+                            <div class="form-group" id="emailVerifyGroup" style="display: none;">
+                                <label class="form-label">인증번호</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="text" id="emailVerifyCode" class="form-input" placeholder="6자리 인증번호" maxlength="6">
+                                    <button onclick="updateEmail()" class="btn-primary">이메일 변경</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 비밀번호 변경 -->
+                        <div class="edit-section-group">
+                            <h3 class="edit-section-title">비밀번호 변경</h3>
+                            <button onclick="sendPasswordVerification()" class="btn-secondary">비밀번호 변경 시작</button>
+                            <div id="passwordChangeGroup" style="display: none; margin-top: 1rem;">
+                                <div class="form-group">
+                                    <label class="form-label">인증번호</label>
+                                    <input type="text" id="passwordVerifyCode" class="form-input" placeholder="이메일로 받은 인증번호" maxlength="6">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">새 비밀밀호</label>
+                                    <input type="password" id="newPassword" class="form-input" placeholder="새 비밀번호" oninput="checkPasswordStrength()">
+                                    <div id="passwordStrengthBar" class="password-strength-bar" style="margin-top: 0.5rem;">
+                                        <div id="passwordStrengthFill" class="password-strength-fill"></div>
+                                    </div>
+                                    <small id="passwordStrengthText" style="color: var(--text-secondary); font-size: 0.75rem; display: block; margin-top: 0.25rem;"></small>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">비밀번호 확인</label>
+                                    <input type="password" id="newPasswordConfirm" class="form-input" placeholder="비밀번호 확인">
+                                </div>
+                                <button onclick="updatePassword()" class="btn-primary">비밀번호 변경</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 계정 설정 섹션 -->
+            <div id="settingsSection" class="content-section" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title">계정 설정</h1>
+                    <p class="page-subtitle">계정 관련 설정을 변경하세요</p>
+                </div>
+                
+                <!-- 계정 정보 -->
+                <div class="info-section">
+                    <h2 class="info-section-title">계정 정보</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">가입일</span>
+                            <span class="info-value" id="accountCreatedAt">-</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">마지막 로그인</span>
+                            <span class="info-value" id="accountLastLogin">방금 전</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 위험 영역 -->
+                <div class="info-section" style="border: 2px solid #ef4444;">
+                    <h2 class="info-section-title" style="color: #ef4444;">위험 영역</h2>
+                    <div style="margin-bottom: 1rem;">
+                        <h3 style="font-size: 1.1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">회원 탈퇴</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">
+                            계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.
+                        </p>
+                        <button onclick="showDeleteAccountModal()" class="btn-danger">회원 탈퇴</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 로그아웃 모달 -->
+    <div id="logoutModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                    <polyline points="16 17 21 12 16 7"/>
+                    <line x1="21" y1="12" x2="9" y2="12"/>
+                </svg>
+                <h2>로그아웃</h2>
+            </div>
+            <p class="modal-text">로그아웃 하시겠습니까?</p>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeLogoutModal()">취소</button>
+                <button class="btn-primary" onclick="performLogout()">로그아웃</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 회원 탈퇴 모달 -->
+    <div id="deleteAccountModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+                <h2 style="color: #ef4444;">회원 탈퇴</h2>
+            </div>
+            <p class="modal-text">정말로 탈퇴하시겠습니까? 이 작업은 되돌릴 수 없습니다.</p>
+            <p class="modal-text" style="font-size: 0.9rem; color: var(--text-secondary);">
+                탈퇴 시 모든 검사 이력과 개인정보가 영구적으로 삭제됩니다.
+            </p>
+            <div class="form-group" style="margin: 1.5rem 0;">
+                <label class="form-label">비밀번호 확인</label>
+                <input type="password" id="deleteAccountPassword" class="form-input" placeholder="비밀번호를 입력하세요">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeDeleteAccountModal()">취소</button>
+                <button class="btn-danger" onclick="performDeleteAccount()">탈퇴하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 사용 내역 자세히 보기 모달 -->
+    <div id="usageHistoryModal" class="modal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header">
+                <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    <path d="M9 12h6m-6 4h6"/>
+                </svg>
+                <h2>사용 내역</h2>
+            </div>
+            
+            <!-- 검색 및 필터 -->
+            <div style="background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 1.25rem; margin-bottom: 1rem;">
+                <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1rem;">
+                    <!-- 검색창 -->
+                    <div style="flex: 1; min-width: 150px;">
+                        <input type="text" id="usageSearchInput" placeholder="파일명 검색..." style="width: 100%; padding: 0.6rem 0.875rem; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 0.875rem;" oninput="filterUsageHistory()">
+                    </div>
+                    
+                    <!-- 필터 버튼 -->
+                    <div style="display: flex; gap: 0.625rem; align-items: center;">
+                        <button id="usageFilterPentera" class="filter-btn active" onclick="toggleUsageFilter('pentera')" style="padding: 0.5rem 0.875rem; font-size: 0.875rem;">
+                            <svg style="width: 14px; height: 14px; margin-right: 0.375rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Pentera
+                        </button>
+                        <button id="usageFilterSentinel" class="filter-btn active" onclick="toggleUsageFilter('sentinel')" style="padding: 0.5rem 0.875rem; font-size: 0.875rem;">
+                            <svg style="width: 14px; height: 14px; margin-right: 0.375rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Sentinel One
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 날짜 필터 -->
+                <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <label style="color: var(--text-secondary); font-size: 0.875rem; white-space: nowrap;">시작일:</label>
+                        <input type="date" id="usageStartDate" style="padding: 0.5rem; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 0.875rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;" onchange="filterUsageHistory()">
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <label style="color: var(--text-secondary); font-size: 0.875rem; white-space: nowrap;">종료일:</label>
+                        <input type="date" id="usageEndDate" style="padding: 0.5rem; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 0.875rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;" onchange="filterUsageHistory()">
+                    </div>
+                    <button onclick="resetUsageDateFilter()" style="padding: 0.5rem 1rem; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-secondary); font-size: 0.875rem; cursor: pointer;">
+                        날짜 초기화
+                    </button>
+                </div>
+            </div>
+            
+            <div style="max-height: 400px; overflow-y: auto; margin: 1rem 0;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead style="position: sticky; top: 0; background: var(--card-bg); border-bottom: 2px solid var(--border-color);">
+                        <tr>
+                            <th style="padding: 1rem; text-align: center; color: var(--text-secondary); font-weight: 600; width: 80px;">번호</th>
+                            <th style="padding: 1rem; text-align: left; color: var(--text-secondary); font-weight: 600;">일시</th>
+                            <th style="padding: 1rem; text-align: left; color: var(--text-secondary); font-weight: 600;">보고서 이름</th>
+                            <th style="padding: 1rem; text-align: left; color: var(--text-secondary); font-weight: 600;">서비스</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usageHistoryList">
+                        <tr>
+                            <td colspan="4" style="padding: 2rem; text-align: center; color: var(--text-secondary);">내역이 없습니다.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeUsageHistoryModal()">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 사용자 관리 모달 -->
+    <div id="userManageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <h2>사용자 관리</h2>
+            </div>
+            <div style="margin: 1.5rem 0;">
+                <p style="color: var(--text-secondary); margin-bottom: 0.5rem; font-size: 1rem;">
+                    사용자: <strong id="manageUserName" style="color: var(--text-primary);"></strong>
+                </p>
+                <p style="color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    현재 플랜: <strong id="manageCurrentPlan" style="color: var(--primary-color);"></strong>
+                </p>
+                
+                <!-- 플랜 변경 -->
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <label class="form-label">플랜 변경</label>
+                    <select id="managePlanSelect" class="form-input">
+                        <option value="free">무료 플랜</option>
+                        <option value="sentinel">Sentinel One +</option>
+                        <option value="pentera">Pentera +</option>
+                        <option value="premium">Premium +</option>
+                    </select>
+                    <button class="btn-primary" onclick="performChangePlan()" style="width: 100%; margin-top: 0.5rem;">플랜 변경</button>
+                </div>
+                
+                <!-- 검사 내역 초기화 -->
+                <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-bottom: 1.5rem;">
+                    <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.75rem;">
+                        검사 내역 관리: 해당 사용자의 모든 검사 이력이 삭제됩니다.
+                    </p>
+                    <button class="btn-secondary" onclick="clearUserScanHistory()" style="width: 100%; background-color: #f59e0b; color: white; border: none;">
+                        검사 내역 초기화
+                    </button>
+                </div>
+                
+                <!-- 사용자 삭제 -->
+                <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+                    <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.75rem;">
+                        위험 영역: 사용자 삭제 시 모든 데이터가 영구 삭제됩니다.
+                    </p>
+                    <button class="btn-danger" onclick="deleteUserFromModal()" style="width: 100%;">사용자 삭제</button>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeUserManageModal()">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 결제 모달 -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                    <line x1="1" y1="10" x2="23" y2="10"></line>
+                </svg>
+                <h2>결제 정보</h2>
+            </div>
+            <div style="margin: 1.5rem 0;">
+                <!-- 선택한 플랜 정보 -->
+                <div style="background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.1)); border: 2px solid rgba(99,102,241,0.3); border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 2rem;">
+                    <p style="color: var(--text-secondary); font-size: 0.875rem; margin: 0 0 0.5rem 0;">선택한 플랜</p>
+                    <h3 id="paymentPlanName" style="color: var(--text-primary); font-size: 1.5rem; font-weight: 700; margin: 0 0 1rem 0;">Premium +</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-secondary);">월 이용료</span>
+                        <span id="paymentPlanPrice" style="color: var(--primary-color); font-size: 1.75rem; font-weight: 700;">₩65,000</span>
+                    </div>
+                </div>
+
+                <!-- 결제 수단 -->
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label class="form-label">결제 수단</label>
+                    <select class="form-input" id="paymentMethod" onchange="changePaymentMethod()">
+                        <option value="card">신용카드</option>
+                        <option value="bank">계좌이체</option>
+                        <option value="phone">휴대폰 결제</option>
+                    </select>
+                </div>
+
+                <!-- 신용카드 정보 -->
+                <div id="cardPaymentFields">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label">카드 번호</label>
+                        <input type="text" class="form-input" id="cardNumber" placeholder="0000-0000-0000-0000" maxlength="19">
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; justify-content: flex-start;">
+                        <div class="form-group" style="width: 140px;">
+                            <label class="form-label">유효기간</label>
+                            <input type="text" class="form-input" id="cardExpiry" placeholder="MM/YY" maxlength="5">
+                        </div>
+                        <div class="form-group" style="width: 100px;">
+                            <label class="form-label">CVC</label>
+                            <input type="text" class="form-input" id="cardCvc" placeholder="000" maxlength="3">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 계좌이체 정보 -->
+                <div id="bankPaymentFields" style="display: none;">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label">은행 선택</label>
+                        <select class="form-input" id="bankName">
+                            <option value="">은행을 선택하세요</option>
+                            <option value="kb">KB국민은행</option>
+                            <option value="shinhan">신한은행</option>
+                            <option value="woori">우리은행</option>
+                            <option value="hana">하나은행</option>
+                            <option value="nh">NH농협은행</option>
+                            <option value="ibk">IBK기업은행</option>
+                            <option value="kakao">카카오뱅크</option>
+                            <option value="toss">토스뱅크</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label class="form-label">계좌번호</label>
+                        <input type="text" class="form-input" id="accountNumber" placeholder="계좌번호 입력 (- 없이)" maxlength="20">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label class="form-label">예금주명</label>
+                        <input type="text" class="form-input" id="accountHolder" placeholder="예금주명 입력">
+                    </div>
+                </div>
+
+                <!-- 휴대폰 결제 정보 -->
+                <div id="phonePaymentFields" style="display: none;">
+                    <div class="form-group" style="margin-bottom: 1rem;">
+                        <label class="form-label">통신사 선택</label>
+                        <select class="form-input" id="carrier">
+                            <option value="">통신사를 선택하세요</option>
+                            <option value="skt">SKT</option>
+                            <option value="kt">KT</option>
+                            <option value="lgu">LG U+</option>
+                            <option value="mvno">알뜰폰</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label class="form-label">휴대폰 번호</label>
+                        <input type="text" class="form-input" id="phoneNumber" placeholder="010-0000-0000" maxlength="13" readonly style="background-color: var(--bg-secondary); cursor: not-allowed;">
+                    </div>
+
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label class="form-label">주민등록번호</label>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="text" class="form-input" id="birthNumber1" placeholder="000000" maxlength="6" style="width: 100px; text-align: center;">
+                            <span style="color: var(--text-secondary); font-weight: 600;">-</span>
+                            <div style="display: flex; align-items: center; position: relative;">
+                                <input type="text" class="form-input" id="birthNumber2" placeholder="0" maxlength="1" style="width: 50px; text-align: center;">
+                                <span style="color: var(--text-secondary); position: absolute; left: 50px; pointer-events: none;">000000</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 동의 -->
+                <div style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" id="paymentAgree" style="width: 18px; height: 18px;">
+                        <span style="color: var(--text-secondary); font-size: 0.875rem;">결제 정보 및 이용약관에 동의합니다.</span>
+                    </label>
+                </div>
+
+                <p style="color: var(--text-secondary); font-size: 0.75rem; line-height: 1.5; margin-bottom: 0;">
+                    * 이 결제는 데모용으로, 실제 결제가 진행되지 않으며 플랜만 변경됩니다.
+                </p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closePaymentModal()">취소</button>
+                <button class="btn-primary" onclick="processPayment(event)">결제하기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 요금제 자세히 보기 모달 -->
+    <div id="pricingDetailModal" class="modal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header">
+                <svg class="modal-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <h2>등급 및 기능 비교</h2>
+            </div>
+            <div style="overflow-x: auto; margin: 1rem 0;">
+                <table style="width: 100%; border-collapse: collapse; background: var(--card-bg);">
+                    <thead>
+                        <tr style="border-bottom: 2px solid var(--border-color);">
+                            <th style="padding: 1.5rem; text-align: left; font-weight: 700; color: var(--text-primary); background: rgba(99,102,241,0.05);">구분</th>
+                            <th style="padding: 1.5rem; text-align: center; font-weight: 700; color: var(--text-primary); background: rgba(99,102,241,0.05);">무료 플랜</th>
+                            <th style="padding: 1.5rem; text-align: center; font-weight: 700; color: var(--text-primary); background: rgba(99,102,241,0.05);">Sentinel One +</th>
+                            <th style="padding: 1.5rem; text-align: center; font-weight: 700; color: var(--text-primary); background: rgba(99,102,241,0.05);">Pentera +</th>
+                            <th style="padding: 1.5rem; text-align: center; font-weight: 700; color: var(--text-primary); background: rgba(99,102,241,0.05);">Premium +</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 1.5rem; color: var(--text-primary); font-weight: 600;">
+                                Sentinel One<br>ISMS-P 매핑
+                            </td>
+                            <td style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">
+                                월 10회
+                            </td>
+                            <td style="padding: 1.5rem; text-align: center; color: var(--primary-color); font-weight: 700;">
+                                무제한
+                            </td>
+                            <td style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">
+                                월 20회
+                            </td>
+                            <td style="padding: 1.5rem; text-align: center; color: var(--primary-color); font-weight: 700;">
+                                무제한
+                            </td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid var(--border-color);">
+                            <td style="padding: 1.5rem; color: var(--text-primary); font-weight: 600;">
+                                Pentera<br>ISMS-P 매핑
+                            </td>
+                            <td style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">
+                                월 1회
+                            </td>
+                            <td style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">
+                                월 2회
+                            </td>
+                            <td style="padding: 1.5rem; text-align: center; color: var(--primary-color); font-weight: 700;">
+                                무제한
+                            </td>
+                            <td style="padding: 1.5rem; text-align: center; color: var(--primary-color); font-weight: 700;">
+                                무제한
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closePricingDetailModal()">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 푸터 -->
+    <footer class="footer" style="background: var(--card-bg); border-top: 1px solid var(--border-color); padding: 3rem 0 2rem; margin-top: 3rem;">
+        <div class="container" style="max-width: 1400px; margin: 0 auto; padding: 0 2rem;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 3rem; margin-bottom: 2rem;">
+                <!-- 서비스 정보 -->
+                <div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.25rem;">
+                        <img src="/static/images/JK SecuOne_logo.png" alt="JK SecuOne Logo" style="width: 32px; height: 32px; object-fit: contain;">
+                        <h3 style="margin: 0; color: var(--text-primary); font-size: 1.375rem; font-weight: 700; letter-spacing: -0.02em;">JK SecuOne</h3>
+                    </div>
+                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem; line-height: 1.7; font-weight: 400;">
+                        ISMS-P 인증을 위한 지능형 보안 취약점 분석 플랫폼
+                    </p>
+                </div>
+                
+                <!-- 주요 기능 -->
+                <div>
+                    <h4 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1rem; font-weight: 600;">주요 기능</h4>
+                    <ul style="margin: 0; padding: 0; list-style: none;">
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">Sentinel One 매핑</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">Pentera 매핑</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#history" onclick="navigateToSection(event, 'history')" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">검사 이력 관리</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#pricing" onclick="navigateToSection(event, 'pricing')" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">요금제 안내</a></li>
+                    </ul>
+                </div>
+                
+                <!-- 지원 -->
+                <div>
+                    <h4 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1rem; font-weight: 600;">지원</h4>
+                    <ul style="margin: 0; padding: 0; list-style: none;">
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">사용 가이드</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">FAQ</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">문의하기</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="/" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">대시보드</a></li>
+                    </ul>
+                </div>
+                
+                <!-- 법적 정보 -->
+                <div>
+                    <h4 style="margin: 0 0 1rem 0; color: var(--text-primary); font-size: 1rem; font-weight: 600;">법적 정보</h4>
+                    <ul style="margin: 0; padding: 0; list-style: none;">
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">이용약관</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">개인정보처리방침</a></li>
+                        <li style="margin-bottom: 0.5rem;"><a href="#" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">쿠키 정책</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div style="border-top: 1px solid var(--border-color); padding-top: 2rem; margin-top: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <p style="margin: 0; color: var(--text-secondary); font-size: 0.875rem;">
+                        &copy; 2025 JK SecuOne. All rights reserved.
+                    </p>
+                    <div style="display: flex; gap: 1rem;">
+                        <a href="#" style="color: var(--text-secondary); font-size: 0.875rem; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">서비스 상태</a>
+                        <span style="color: var(--border-color);">|</span>
+                        <a href="#" style="color: var(--text-secondary); font-size: 0.875rem; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='var(--primary-color)'" onmouseout="this.style.color='var(--text-secondary)'">API 문서</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/js/main.js?v=2"></script>
+    <script src="/static/js/mypage.js?v=25"></script>
+</body>
+</html>
